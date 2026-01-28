@@ -1,0 +1,2 @@
+This repository is for FOSS Hack 2026.
+Beginner-friendly productivity app prototype.
