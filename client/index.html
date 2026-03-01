@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyFlow Tasks</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(to right, #f0f4f8, #d9e2ec);
+    padding: 20px;
+    margin: 0;
+  }
+
+  h1 {
+    text-align: center;
+    color: #1e3a8a;
+    margin-bottom: 10px;
+  }
+
+  /* Progress bar */
+  .progress-container {
+    max-width: 600px;
+    margin: 0 auto 20px auto;
+    background: #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
+    height: 20px;
+  }
+  .progress-bar {
+    height: 100%;
+    width: 0%;
+    background: #3b82f6;
+    transition: width 0.3s;
+  }
+
+  .task-form, .filters, #tasksContainer {
+    max-width: 600px;
+    margin: 0 auto 20px auto;
+  }
+
+  .task-form, .filters {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  }
+
+  input, textarea, select, button {
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+  }
+
+  input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: #1e3a8a;
+    box-shadow: 0 0 5px rgba(30,58,138,0.3);
+  }
+
+  button {
+    background-color: #1e3a8a;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+  }
+
+  button:hover { background-color: #3b82f6; }
+
+  .filters { flex-wrap: wrap; }
+
+  #tasksContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .task {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    background: #fff;
+    padding: 15px 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    cursor: grab;
+  }
+
+  .task.dragging { opacity: 0.6; cursor: grabbing; }
+
+  .task.completed {
+    opacity: 0.6;
+    text-decoration: line-through;
+    background: #e0e7ff;
+  }
+
+  .task h3 { margin: 0 0 5px 0; color: #1e3a8a; }
+  .task p { margin: 2px 0; font-size: 14px; color: #4b5563; }
+
+  .priority-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    padding: 4px 8px;
+    border-radius: 12px;
+    color: #fff;
+    font-size: 12px;
+    font-weight: bold;
+  }
+
+  .priority-high { background-color: #ef4444; }
+  .priority-medium { background-color: #f59e0b; }
+  .priority-low { background-color: #10b981; }
+
+  .task-actions button { margin-left: 5px; padding: 6px 12px; font-size: 14px; border-radius: 6px; }
+  .task-actions button:hover { opacity: 0.8; }
+
+  @media(max-width: 600px) {
+    .task { flex-direction: column; align-items: stretch; }
+    .task-actions { margin-top: 10px; display: flex; justify-content: flex-end; }
+  }
+</style>
+</head>
+<body>
+
+<h1>StudyFlow Tasks</h1>
+<div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
+
+<div class="task-form">
+  <input type="text" id="title" placeholder="Task title" />
+  <textarea id="description" placeholder="Description"></textarea>
+  <select id="priority">
+    <option value="High">High</option>
+    <option value="Medium" selected>Medium</option>
+    <option value="Low">Low</option>
+  </select>
+  <input type="date" id="dueDate" />
+  <button id="addTask">Add Task</button>
+</div>
+
+<div class="filters">
+  <input type="text" id="search" placeholder="Search tasks..." />
+  <select id="filterPriority">
+    <option value="">All Priorities</option>
+    <option value="High">High</option>
+    <option value="Medium">Medium</option>
+    <option value="Low">Low</option>
+  </select>
+</div>
+
+<div id="tasksContainer"></div>
+
+<script>
+const API_URL = "http://localhost:5000/tasks";
+const tasksContainer = document.getElementById("tasksContainer");
+const progressBar = document.getElementById("progressBar");
+
+// Fetch tasks and render
+async function fetchTasks() {
+  let tasks = await (await fetch(API_URL)).json();
+  const searchQuery = document.getElementById("search").value.toLowerCase();
+  const filterPriority = document.getElementById("filterPriority").value;
+
+  tasks = tasks.filter(t => 
+    (t.title.toLowerCase().includes(searchQuery) || t.description.toLowerCase().includes(searchQuery)) &&
+    (filterPriority === "" || t.priority === filterPriority)
+  );
+
+  tasksContainer.innerHTML = "";
+  tasks.forEach(task => displayTask(task));
+
+  updateProgress(tasks);
+}
+
+// Progress bar update
+function updateProgress(tasks) {
+  if (tasks.length === 0) return progressBar.style.width = "0%";
+  const completed = tasks.filter(t => t.completed).length;
+  progressBar.style.width = ((completed / tasks.length) * 100) + "%";
+}
+
+// Add new task
+document.getElementById("addTask").addEventListener("click", async () => {
+  const title = document.getElementById("title").value.trim();
+  const description = document.getElementById("description").value.trim();
+  const priority = document.getElementById("priority").value;
+  const dueDate = document.getElementById("dueDate").value;
+  if (!title) return alert("Title required");
+
+  const res = await fetch(API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ title, description, priority, dueDate })
+  });
+  const task = await res.json();
+  document.getElementById("title").value = "";
+  document.getElementById("description").value = "";
+  document.getElementById("priority").value = "Medium";
+  document.getElementById("dueDate").value = "";
+  fetchTasks();
+});
+
+// Display task
+function displayTask(task) {
+  const div = document.createElement("div");
+  div.className = `task ${task.completed ? "completed" : ""}`;
+  div.dataset.id = task._id;
+  div.innerHTML = `
+    <div class="task-details">
+      <h3>${task.title}</h3>
+      <p>${task.description}</p>
+      <p>Due: ${task.dueDate ? new Date(task.dueDate).toLocaleDateString() : "N/A"}</p>
+      <label><input type="checkbox" ${task.completed ? "checked" : ""} onclick="toggleComplete('${task._id}', this)"> Completed</label>
+    </div>
+    <div class="task-actions">
+      <button onclick="editTask('${task._id}', this)">Edit</button>
+      <button onclick="deleteTask('${task._id}', this)">Delete</button>
+    </div>
+    <div class="priority-badge priority-${task.priority.toLowerCase()}">${task.priority}</div>
+  `;
+  tasksContainer.appendChild(div);
+  addDragEvents(div);
+}
+
+// Delete task
+async function deleteTask(id, btn) {
+  await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+  btn.closest(".task").remove();
+  fetchTasks();
+}
+
+// Edit task
+function editTask(id, btn) {
+  const taskDiv = btn.closest(".task");
+  const taskDetails = taskDiv.querySelector(".task-details");
+  const title = taskDetails.querySelector("h3").innerText;
+  const description = taskDetails.querySelector("p").innerText;
+  const dueDateText = taskDetails.querySelectorAll("p")[1].innerText.replace("Due: ", "");
+  const priorityText = taskDiv.querySelector(".priority-badge").innerText;
+
+  taskDetails.innerHTML = `
+    <input type="text" value="${title}" />
+    <textarea>${description}</textarea>
+    <input type="date" value="${dueDateText === "N/A" ? "" : new Date(dueDateText).toISOString().split('T')[0]}" />
+    <select>
+      <option value="High" ${priorityText==="High"?"selected":""}>High</option>
+      <option value="Medium" ${priorityText==="Medium"?"selected":""}>Medium</option>
+      <option value="Low" ${priorityText==="Low"?"selected":""}>Low</option>
+    </select>
+  `;
+  btn.textContent = "Save";
+  btn.onclick = () => saveTask(id, taskDiv, btn);
+}
+
+// Save task
+async function saveTask(id, taskDiv, btn) {
+  const inputs = taskDiv.querySelectorAll(".task-details input, .task-details textarea, .task-details select");
+  const updatedTask = {
+    title: inputs[0].value,
+    description: inputs[1].value,
+    dueDate: inputs[2].value,
+    priority: inputs[3].value
+  };
+  const res = await fetch(`${API_URL}/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(updatedTask)
+  });
+  const task = await res.json();
+  fetchTasks();
+}
+
+// Toggle completed
+async function toggleComplete(id, checkbox) {
+  await fetch(`${API_URL}/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ completed: checkbox.checked })
+  });
+  fetchTasks();
+}
+
+// Filters
+document.getElementById("search").addEventListener("input", fetchTasks);
+document.getElementById("filterPriority").addEventListener("change", fetchTasks);
+
+// Drag and drop
+let dragSrcEl = null;
+
+function handleDragStart(e) { dragSrcEl = this; e.dataTransfer.effectAllowed = 'move'; this.classList.add('dragging'); }
+function handleDragOver(e) { e.preventDefault(); return false; }
+function handleDrop(e) {
+  e.stopPropagation();
+  if (dragSrcEl !== this) {
+    const parent = this.parentNode;
+    parent.insertBefore(dragSrcEl, this.nextSibling);
+    saveOrder();
+  }
+  return false;
+}
+function handleDragEnd() { this.classList.remove('dragging'); }
+function addDragEvents(el) {
+  el.setAttribute("draggable", true);
+  el.addEventListener('dragstart', handleDragStart);
+  el.addEventListener('dragover', handleDragOver);
+  el.addEventListener('drop', handleDrop);
+  el.addEventListener('dragend', handleDragEnd);
+}
+
+// Save order to backend
+async function saveOrder() {
+  const order = Array.from(tasksContainer.children).map(div => div.dataset.id);
+  await fetch(`${API_URL}/reorder`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ order })
+  });
+}
+
+setInterval(fetchTasks, 3000);
+fetchTasks();
+</script>
+</body>
+</html>
