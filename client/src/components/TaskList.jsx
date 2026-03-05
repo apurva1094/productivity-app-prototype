@@ -1,34 +1,46 @@
-import React from "react";
+import React, { useState } from "react";
 
-const TaskList = ({ tasks, onDelete, onToggle, onEdit }) => {
+function TaskList({ tasks, onEdit, onDelete, onToggleDone }) {
+  const [removingIndex, setRemovingIndex] = useState(null);
+
+  const handleToggle = (index) => {
+    if (!tasks[index].done) {
+      // Animate removal only for marking done
+      setRemovingIndex(index);
+      setTimeout(() => {
+        onToggleDone(index);
+        setRemovingIndex(null);
+      }, 400); // match animation duration
+    } else {
+      onToggleDone(index); // undo done immediately
+    }
+  };
+
   return (
     <div className="task-list">
-      {tasks.map(task => (
-        <div key={task.id} className={`task-item ${task.completed ? "completed" : ""}`}>
-          <div className="task-info">
-            <h4>{task.name}</h4>
-            <p>{task.description}</p>
-            <div className="task-meta">
-              <span>Priority: {task.priority}</span>
-              <span>Due: {task.dueDate}</span>
-              {!task.completed && (
-                new Date(task.dueDate) < new Date()
-                  ? <span className="badge overdue">Overdue</span>
-                  : <span className="badge soon">Due Soon</span>
-              )}
-            </div>
-          </div>
+      {tasks.length === 0 && <p>No tasks to display!</p>}
+      {tasks.map((task, index) => (
+        <div
+          key={index}
+          className={`task-card ${task.overdue ? "overdue" : ""} ${
+            removingIndex === index ? "fade-slide-out" : ""
+          }`}
+        >
+          <h4>{task.title}</h4>
+          <p>{task.description}</p>
+          <p className={task.urgency.toLowerCase()}>{task.urgency}</p>
+          <p>Due: {task.dueDate !== "N/A" ? new Date(task.dueDate).toLocaleDateString('en-US') : 'N/A'}</p>
           <div className="task-buttons">
-            <button className="toggle" onClick={() => onToggle(task.id, !task.completed)}>
-              {task.completed ? "Undo" : "Done"}
+            <button className="done-btn" onClick={() => handleToggle(index)}>
+              {task.done ? "Undo" : "Done"}
             </button>
-            <button className="edit" onClick={() => onEdit(task)}>Edit</button>
-            <button className="delete" onClick={() => onDelete(task.id)}>Delete</button>
+            <button className="edit-btn" onClick={() => onEdit(index)}>Edit</button>
+            <button className="delete-btn" onClick={() => onDelete(index)}>Delete</button>
           </div>
         </div>
       ))}
     </div>
   );
-};
+}
 
 export default TaskList;

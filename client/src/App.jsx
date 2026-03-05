@@ -1,90 +1,155 @@
+// App.jsx
 import React, { useState, useEffect } from "react";
-import { getTasks, addTask, deleteTask, updateTask, toggleComplete } from "./api";
 import TaskForm from "./components/TaskForm";
 import TaskList from "./components/TaskList";
-import "./index.css";
+import FocusTimer from "./components/FocusTimer";
+import * as confetti from "canvas-confetti";
+import "./style.css";
 
 function App() {
   const [tasks, setTasks] = useState([]);
-  const [editingTask, setEditingTask] = useState(null);
+  const [editingIndex, setEditingIndex] = useState(null);
+  const [darkMode, setDarkMode] = useState(false);
+  const [filter, setFilter] = useState("All");
+  const [streak, setStreak] = useState(0);
 
-  const fetchTasks = async () => {
-    const data = await getTasks();
-    setTasks(data);
+  // Load streak from localStorage
+  useEffect(() => {
+    const savedStreak = localStorage.getItem("pomodoroStreak");
+    if (savedStreak) setStreak(Number(savedStreak));
+  }, []);
+
+  // Save streak to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem("pomodoroStreak", streak);
+  }, [streak]);
+
+  // ---- TASK HANDLERS ----
+  const handleAddOrUpdate = (task) => {
+    if (editingIndex !== null) {
+      const updated = [...tasks];
+      updated[editingIndex] = task;
+      setTasks(updated);
+      setEditingIndex(null);
+    } else {
+      setTasks([...tasks, task]);
+    }
   };
 
-  useEffect(() => { fetchTasks(); }, []);
-
-  const calculateUrgency = (task) => {
-    if (task.completed) return 0;
-    const priorityMap = { High: 3, Medium: 2, Low: 1 };
-    const priorityScore = priorityMap[task.priority] || 1;
-
-    if (!task.dueDate) return priorityScore;
-
-    const today = new Date();
-    const due = new Date(task.dueDate);
-    const diffDays = Math.ceil((due - today) / (1000*60*60*24));
-
-    let timeScore = 1;
-    if (diffDays < 0) timeScore = 5;
-    else if (diffDays === 0) timeScore = 4;
-    else if (diffDays <= 2) timeScore = 3;
-    else if (diffDays <= 5) timeScore = 2;
-
-    return priorityScore + timeScore;
+  const handleEdit = (index) => {
+    setEditingIndex(index);
   };
 
-  const sortedTasks = [...tasks].sort((a,b) => calculateUrgency(b) - calculateUrgency(a));
-
-  const completedCount = tasks.filter(t => t.completed).length;
-  const progress = tasks.length === 0 ? 0 : (completedCount / tasks.length) * 100;
-  const totalUrgency = tasks.reduce((sum,t) => sum + calculateUrgency(t), 0);
-
-  const handleAdd = async (task) => {
-    await addTask({ ...task, id: Date.now() });
-    fetchTasks();
+  const handleDelete = (index) => {
+    setTasks(tasks.filter((_, i) => i !== index));
   };
 
-  const handleDelete = async (id) => {
-    await deleteTask(id);
-    fetchTasks();
+  const handleToggleDone = (index) => {
+    const updated = [...tasks];
+    updated[index].done = !updated[index].done;
+    setTasks(updated);
   };
 
-  const handleUpdate = async (id, updatedTask) => {
-    await updateTask(id, updatedTask);
-    setEditingTask(null);
-    fetchTasks();
+  const handleClearCompleted = () => {
+    setTasks(tasks.filter(task => !task.done));
   };
 
-  const handleToggle = async (id, completed) => {
-    await toggleComplete(id, completed);
-    fetchTasks();
+  // ---- POMODORO END HANDLER ----
+  const handlePomodoroEnd = () => {
+    const firstIncompleteIndex = tasks.findIndex(task => !task.done);
+    if (firstIncompleteIndex !== -1) {
+      const updatedTasks = [...tasks];
+      updatedTasks[firstIncompleteIndex].done = true;
+      setTasks(updatedTasks);
+    }
+
+    const newStreak = streak + 1;
+    setStreak(newStreak);
+
+    if (newStreak % 5 === 0) {
+      confetti({
+        particleCount: 200,
+        spread: 90,
+        origin: { y: 0.6 },
+      });
+      alert(`🎉 Milestone! ${newStreak} Pomodoro sessions completed!`);
+    }
   };
 
-  const handleEdit = (task) => setEditingTask(task);
+  // ---- CALCULATE PROGRESS & FILTERS ----
+  const totalTasks = tasks.length;
+  const completedTasks = tasks.filter(t => t.done).length;
+  const progressPercent = totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
+
+  const filteredTasks = tasks
+    .filter(task => 
+      filter === "All" ? true :
+      filter === "Done" ? task.done :
+      filter === "Pending" ? !task.done :
+      task.overdue
+    )
+    .sort((a,b) => {
+      if (a.overdue && !b.overdue) return -1;
+      if (!a.overdue && b.overdue) return 1;
+      const priorityOrder = { High: 1, Medium: 2, Low: 3 };
+      return (priorityOrder[a.urgency] || 4) - (priorityOrder[b.urgency] || 4);
+    });
 
   return (
-    <div className="container">
-      <h1>StudyFlow – Smart Productivity Engine</h1>
-      <h2>Focus Score: {totalUrgency}</h2>
+    <div className={`app-container ${darkMode ? "dark-mode" : ""}`}>
+      {/* Theme toggle */}
+      <button className="theme-toggle" onClick={() => setDarkMode(prev => !prev)}>
+        {darkMode ? "☀️ Light Mode" : "🌙 Dark Mode"}
+      </button>
 
-      <div className="progress-bar-container">
-        <div className="progress-bar" style={{ width: `${progress}%` }}></div>
+      <h1>📋 My Tasks & Focus App</h1>
+
+      {/* Progress bar */}
+      <div className="progress-container">
+        <div className="progress-bar" style={{ width: `${progressPercent}%` }}>
+          {progressPercent}%
+        </div>
       </div>
 
-      <TaskForm 
-        onAdd={handleAdd} 
-        onUpdate={handleUpdate} 
-        editingTask={editingTask} 
+      {/* Celebration Message */}
+      {totalTasks > 0 && completedTasks === totalTasks && (
+        <p className="celebration-text">🎉 All tasks completed! Great job! 🎉</p>
+      )}
+
+      {/* Filter buttons */}
+      <div className="filter-buttons">
+        {["All","Done","Pending","Overdue"].map(f => (
+          <button 
+            key={f} 
+            className={filter===f?"active":""} 
+            onClick={()=>setFilter(f)}
+          >{f}</button>
+        ))}
+        <button onClick={handleClearCompleted} className="clear-btn">Clear Completed</button>
+      </div>
+
+      {/* Task Form */}
+      <TaskForm
+        onAdd={handleAddOrUpdate}
+        editingTask={editingIndex !== null ? tasks[editingIndex] : null}
+        onClearEdit={() => setEditingIndex(null)}
       />
 
-      <TaskList 
-        tasks={sortedTasks} 
-        onDelete={handleDelete} 
-        onToggle={handleToggle} 
-        onEdit={handleEdit} 
+      {/* Task List */}
+      <TaskList
+        tasks={filteredTasks}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        onToggleDone={handleToggleDone}
       />
+
+      {/* Pomodoro Streak Display */}
+      <div className="streak-display">
+        🔥 Pomodoro Streak: {streak} {streak === 1 ? "session" : "sessions"}
+      </div>
+
+      {/* Pomodoro Timer */}
+      <FocusTimer onPomodoroEnd={handlePomodoroEnd} />
     </div>
   );
 }
