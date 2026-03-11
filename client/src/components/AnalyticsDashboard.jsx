@@ -1,42 +1,28 @@
-function AnalyticsDashboard({ tasks }) {
-  const total = tasks.length;
-  const completed = tasks.filter((t) => t.completed).length;
-  const pending = total - completed;
-  const completionRate =
-    total === 0 ? 0 : Math.round((completed / total) * 100);
+function AnalyticsDashboard({ total, completed, progress, streak }) {
 
   return (
-    <div className="analytics-box">
-      <h2>📊 Productivity Analytics</h2>
+    <div className="analytics-dashboard">
 
-      <div className="analytics-stats">
-        <div>
-          <span>Total Tasks</span>
-          <strong>{total}</strong>
-        </div>
-
-        <div>
-          <span>Completed</span>
-          <strong>{completed}</strong>
-        </div>
-
-        <div>
-          <span>Pending</span>
-          <strong>{pending}</strong>
-        </div>
-
-        <div>
-          <span>Completion Rate</span>
-          <strong>{completionRate}%</strong>
-        </div>
+      <div className="stat-card">
+        <h3>Total Tasks</h3>
+        <p>{total}</p>
       </div>
 
-      <div className="analytics-progress">
-        <div
-          className="analytics-fill"
-          style={{ width: `${completionRate}%` }}
-        ></div>
+      <div className="stat-card">
+        <h3>Completed Tasks</h3>
+        <p>{completed}</p>
       </div>
+
+      <div className="stat-card">
+        <h3>Productivity</h3>
+        <p>{progress}%</p>
+      </div>
+
+      <div className="stat-card">
+        <h3>Streak</h3>
+        <p>{streak}</p>
+      </div>
+
     </div>
   );
 }
