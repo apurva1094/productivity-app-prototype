@@ -1,80 +1,51 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 
-function TaskForm({ addTask, updateTask, editingTask }) {
-
+function TaskForm({ onAdd, editingTask, onClearEdit }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [priority, setPriority] = useState("Medium");
   const [dueDate, setDueDate] = useState("");
+  const [urgency, setUrgency] = useState("Medium");
 
   useEffect(() => {
     if (editingTask) {
       setTitle(editingTask.title);
       setDescription(editingTask.description);
-      setPriority(editingTask.priority);
-      setDueDate(editingTask.dueDate);
+      setDueDate(editingTask.dueDate !== "N/A" ? editingTask.dueDate : "");
+      setUrgency(editingTask.urgency);
+    } else {
+      setTitle(""); setDescription(""); setDueDate(""); setUrgency("Medium");
     }
   }, [editingTask]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
     if (!title.trim()) return;
 
-    const taskData = {
+    onAdd({
       title,
       description,
-      priority,
-      dueDate
-    };
+      dueDate: dueDate || "N/A",
+      urgency,
+      done: editingTask?.done || false,
+      overdue: editingTask?.overdue || false,
+    });
 
-    if (editingTask) {
-      updateTask({ ...editingTask, ...taskData });
-    } else {
-      addTask(taskData);
-    }
-
-    setTitle("");
-    setDescription("");
-    setPriority("Medium");
-    setDueDate("");
+    setTitle(""); setDescription(""); setDueDate(""); setUrgency("Medium");
+    if (onClearEdit) onClearEdit();
   };
 
   return (
-    <form className="task-form" onSubmit={handleSubmit}>
-
-      <input
-        type="text"
-        placeholder="Task title"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-      />
-
-      <textarea
-        placeholder="Task description"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-      />
-
-      <select
-        value={priority}
-        onChange={(e) => setPriority(e.target.value)}
-      >
-        <option>High</option>
-        <option>Medium</option>
-        <option>Low</option>
+    <form onSubmit={handleSubmit} className="task-form">
+      <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="Task Title" required />
+      <input type="text" value={description} onChange={e => setDescription(e.target.value)} placeholder="Task Description" />
+      <p>Priority:</p>
+      <select value={urgency} onChange={e => setUrgency(e.target.value)}>
+        <option value="High">High</option>
+        <option value="Medium">Medium</option>
+        <option value="Low">Low</option>
       </select>
-
-      <input
-        type="date"
-        value={dueDate}
-        onChange={(e) => setDueDate(e.target.value)}
-      />
-
-      <button type="submit">
-        {editingTask ? "Update Task" : "Add Task"}
-      </button>
-
+      <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} placeholder="MM/DD/YYYY" />
+      <button type="submit">{editingTask ? "Update Task" : "Add Task"}</button>
     </form>
   );
 }

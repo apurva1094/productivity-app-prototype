@@ -1,239 +1,155 @@
-import { useState, useEffect } from "react";
+// App.jsx
+import React, { useState, useEffect } from "react";
+import TaskForm from "./components/TaskForm";
 import TaskList from "./components/TaskList";
 import FocusTimer from "./components/FocusTimer";
-import AnalyticsDashboard from "./components/AnalyticsDashboard";
-import StreakCounter from "./components/StreakCounter";
+import * as confetti from "canvas-confetti";
+import "./style.css";
 
 function App() {
-
   const [tasks, setTasks] = useState([]);
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [priority, setPriority] = useState("Medium");
-  const [dueDate, setDueDate] = useState("");
-  const [editingTask, setEditingTask] = useState(null);
+  const [editingIndex, setEditingIndex] = useState(null);
   const [darkMode, setDarkMode] = useState(false);
+  const [filter, setFilter] = useState("All");
+  const [streak, setStreak] = useState(0);
 
-  /* LOAD TASKS */
-
+  // Load streak from localStorage
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem("tasks")) || [];
-    setTasks(saved);
+    const savedStreak = localStorage.getItem("pomodoroStreak");
+    if (savedStreak) setStreak(Number(savedStreak));
   }, []);
 
-  /* SAVE TASKS */
-
+  // Save streak to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem("tasks", JSON.stringify(tasks));
-  }, [tasks]);
+    localStorage.setItem("pomodoroStreak", streak);
+  }, [streak]);
 
-  /* DARK MODE */
-
-  useEffect(() => {
-    if (darkMode) {
-      document.body.classList.add("dark");
+  // ---- TASK HANDLERS ----
+  const handleAddOrUpdate = (task) => {
+    if (editingIndex !== null) {
+      const updated = [...tasks];
+      updated[editingIndex] = task;
+      setTasks(updated);
+      setEditingIndex(null);
     } else {
-      document.body.classList.remove("dark");
+      setTasks([...tasks, task]);
     }
-  }, [darkMode]);
-
-  /* ADD TASK */
-
-  const addTask = () => {
-
-    if (!title.trim()) return;
-
-    const newTask = {
-      id: Date.now(),
-      title,
-      description,
-      priority,
-      dueDate,
-      completed: false,
-      completedAt: null
-    };
-
-    setTasks([...tasks, newTask]);
-
-    setTitle("");
-    setDescription("");
-    setPriority("Medium");
-    setDueDate("");
   };
 
-  /* UPDATE TASK */
-
-  const updateTask = () => {
-
-    setTasks(
-      tasks.map((task) =>
-        task.id === editingTask.id
-          ? {
-              ...task,
-              title,
-              description,
-              priority,
-              dueDate
-            }
-          : task
-      )
-    );
-
-    setEditingTask(null);
-    setTitle("");
-    setDescription("");
-    setPriority("Medium");
-    setDueDate("");
+  const handleEdit = (index) => {
+    setEditingIndex(index);
   };
 
-  /* TOGGLE COMPLETE */
-
-  const toggleComplete = (id) => {
-
-    setTasks((prev) =>
-      prev.map((task) =>
-        task.id === id
-          ? {
-              ...task,
-              completed: !task.completed,
-              completedAt: !task.completed ? new Date() : null
-            }
-          : task
-      )
-    );
-
+  const handleDelete = (index) => {
+    setTasks(tasks.filter((_, i) => i !== index));
   };
 
-  /* DELETE TASK */
-
-  const deleteTask = (id) => {
-    setTasks(tasks.filter((task) => task.id !== id));
+  const handleToggleDone = (index) => {
+    const updated = [...tasks];
+    updated[index].done = !updated[index].done;
+    setTasks(updated);
   };
 
-  /* EDIT TASK */
+  const handleClearCompleted = () => {
+    setTasks(tasks.filter(task => !task.done));
+  };
 
-  useEffect(() => {
-
-    if (editingTask) {
-      setTitle(editingTask.title);
-      setDescription(editingTask.description);
-      setPriority(editingTask.priority);
-      setDueDate(editingTask.dueDate);
+  // ---- POMODORO END HANDLER ----
+  const handlePomodoroEnd = () => {
+    const firstIncompleteIndex = tasks.findIndex(task => !task.done);
+    if (firstIncompleteIndex !== -1) {
+      const updatedTasks = [...tasks];
+      updatedTasks[firstIncompleteIndex].done = true;
+      setTasks(updatedTasks);
     }
 
-  }, [editingTask]);
+    const newStreak = streak + 1;
+    setStreak(newStreak);
 
-  /* PROGRESS BAR */
-
-  const completedTasks = tasks.filter((t) => t.completed).length;
-
-  const progress =
-    tasks.length === 0
-      ? 0
-      : Math.round((completedTasks / tasks.length) * 100);
-
-  /* CLEAR COMPLETED */
-
-  const clearCompleted = () => {
-    setTasks(tasks.filter((task) => !task.completed));
+    if (newStreak % 5 === 0) {
+      confetti({
+        particleCount: 200,
+        spread: 90,
+        origin: { y: 0.6 },
+      });
+      alert(`🎉 Milestone! ${newStreak} Pomodoro sessions completed!`);
+    }
   };
+
+  // ---- CALCULATE PROGRESS & FILTERS ----
+  const totalTasks = tasks.length;
+  const completedTasks = tasks.filter(t => t.done).length;
+  const progressPercent = totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
+
+  const filteredTasks = tasks
+    .filter(task => 
+      filter === "All" ? true :
+      filter === "Done" ? task.done :
+      filter === "Pending" ? !task.done :
+      task.overdue
+    )
+    .sort((a,b) => {
+      if (a.overdue && !b.overdue) return -1;
+      if (!a.overdue && b.overdue) return 1;
+      const priorityOrder = { High: 1, Medium: 2, Low: 3 };
+      return (priorityOrder[a.urgency] || 4) - (priorityOrder[b.urgency] || 4);
+    });
 
   return (
-    <div className="app-container">
+    <div className={`app-container ${darkMode ? "dark-mode" : ""}`}>
+      {/* Theme toggle */}
+      <button className="theme-toggle" onClick={() => setDarkMode(prev => !prev)}>
+        {darkMode ? "☀️ Light Mode" : "🌙 Dark Mode"}
+      </button>
 
-      <header>
-        <h1>StudyFlow</h1>
+      <h1>📋 My Tasks & Focus App</h1>
 
-        <button
-          className="dark-toggle"
-          onClick={() => setDarkMode(!darkMode)}
-        >
-          {darkMode ? "Light Mode" : "Dark Mode"}
-        </button>
-      </header>
-
-      {/* DASHBOARD */}
-
-      <AnalyticsDashboard tasks={tasks} />
-
-      {/* STREAK */}
-
-      <StreakCounter tasks={tasks} />
-
-      {/* TIMER */}
-
-      <FocusTimer />
-
-      {/* TASK FORM */}
-
-      <div className="task-form">
-
-        <input
-          type="text"
-          placeholder="Task title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
-
-        <textarea
-          placeholder="Description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
-
-        <select
-          value={priority}
-          onChange={(e) => setPriority(e.target.value)}
-        >
-          <option>High</option>
-          <option>Medium</option>
-          <option>Low</option>
-        </select>
-
-        <input
-          type="date"
-          value={dueDate}
-          onChange={(e) => setDueDate(e.target.value)}
-        />
-
-        {editingTask ? (
-          <button onClick={updateTask}>Update Task</button>
-        ) : (
-          <button onClick={addTask}>Add Task</button>
-        )}
-
-      </div>
-
-      {/* PROGRESS BAR */}
-
+      {/* Progress bar */}
       <div className="progress-container">
-        <div className="progress-bar">
-          <div
-            className="progress-fill"
-            style={{ width: `${progress}%` }}
-          >
-            {progress}%
-          </div>
+        <div className="progress-bar" style={{ width: `${progressPercent}%` }}>
+          {progressPercent}%
         </div>
       </div>
 
-      {/* TASK LIST */}
-
-      <TaskList
-        tasks={tasks}
-        toggleComplete={toggleComplete}
-        deleteTask={deleteTask}
-        setEditingTask={setEditingTask}
-      />
-
-      {/* CLEAR COMPLETED */}
-
-      {tasks.some((t) => t.completed) && (
-        <button className="clear-btn" onClick={clearCompleted}>
-          Clear Completed
-        </button>
+      {/* Celebration Message */}
+      {totalTasks > 0 && completedTasks === totalTasks && (
+        <p className="celebration-text">🎉 All tasks completed! Great job! 🎉</p>
       )}
 
+      {/* Filter buttons */}
+      <div className="filter-buttons">
+        {["All","Done","Pending","Overdue"].map(f => (
+          <button 
+            key={f} 
+            className={filter===f?"active":""} 
+            onClick={()=>setFilter(f)}
+          >{f}</button>
+        ))}
+        <button onClick={handleClearCompleted} className="clear-btn">Clear Completed</button>
+      </div>
+
+      {/* Task Form */}
+      <TaskForm
+        onAdd={handleAddOrUpdate}
+        editingTask={editingIndex !== null ? tasks[editingIndex] : null}
+        onClearEdit={() => setEditingIndex(null)}
+      />
+
+      {/* Task List */}
+      <TaskList
+        tasks={filteredTasks}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        onToggleDone={handleToggleDone}
+      />
+
+      {/* Pomodoro Streak Display */}
+      <div className="streak-display">
+        🔥 Pomodoro Streak: {streak} {streak === 1 ? "session" : "sessions"}
+      </div>
+
+      {/* Pomodoro Timer */}
+      <FocusTimer onPomodoroEnd={handlePomodoroEnd} />
     </div>
   );
 }
