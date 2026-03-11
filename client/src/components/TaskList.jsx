@@ -28,7 +28,9 @@ function TaskList({ tasks, onEdit, onDelete, onToggleDone }) {
         >
           <h4>{task.title}</h4>
           <p>{task.description}</p>
-          <p className={task.urgency.toLowerCase()}>{task.urgency}</p>
+          <p className={`priority ${task.urgency}`}>
+  ⚡ {task.urgency}
+</p>
           <p>Due: {task.dueDate !== "N/A" ? new Date(task.dueDate).toLocaleDateString('en-US') : 'N/A'}</p>
           <div className="task-buttons">
             <button className="done-btn" onClick={() => handleToggle(index)}>

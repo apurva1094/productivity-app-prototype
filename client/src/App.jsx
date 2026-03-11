@@ -7,12 +7,15 @@ import * as confetti from "canvas-confetti";
 import "./style.css";
 
 function App() {
-  const [tasks, setTasks] = useState([]);
+  const [tasks, setTasks] = useState(() => {
+  const savedTasks = localStorage.getItem("tasks");
+  return savedTasks ? JSON.parse(savedTasks) : [];
+});
   const [editingIndex, setEditingIndex] = useState(null);
   const [darkMode, setDarkMode] = useState(false);
   const [filter, setFilter] = useState("All");
   const [streak, setStreak] = useState(0);
-
+const [search, setSearch] = useState("");
   // Load streak from localStorage
   useEffect(() => {
     const savedStreak = localStorage.getItem("pomodoroStreak");
@@ -23,6 +26,9 @@ function App() {
   useEffect(() => {
     localStorage.setItem("pomodoroStreak", streak);
   }, [streak]);
+  useEffect(() => {
+  localStorage.setItem("tasks", JSON.stringify(tasks));
+}, [tasks]);
 
   // ---- TASK HANDLERS ----
   const handleAddOrUpdate = (task) => {
@@ -75,25 +81,49 @@ function App() {
       alert(`🎉 Milestone! ${newStreak} Pomodoro sessions completed!`);
     }
   };
+// ---- CALCULATE PROGRESS & FILTERS ----
 
-  // ---- CALCULATE PROGRESS & FILTERS ----
-  const totalTasks = tasks.length;
-  const completedTasks = tasks.filter(t => t.done).length;
-  const progressPercent = totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
+// Detect overdue tasks
+const today = new Date();
 
-  const filteredTasks = tasks
-    .filter(task => 
-      filter === "All" ? true :
-      filter === "Done" ? task.done :
-      filter === "Pending" ? !task.done :
-      task.overdue
-    )
-    .sort((a,b) => {
-      if (a.overdue && !b.overdue) return -1;
-      if (!a.overdue && b.overdue) return 1;
-      const priorityOrder = { High: 1, Medium: 2, Low: 3 };
-      return (priorityOrder[a.urgency] || 4) - (priorityOrder[b.urgency] || 4);
-    });
+tasks.forEach(task => {
+  if (task.dueDate && task.dueDate !== "N/A") {
+    const dueDate = new Date(task.dueDate);
+    task.overdue = !task.done && dueDate < today;
+  }
+});
+
+// Progress calculations
+const totalTasks = tasks.length;
+const completedTasks = tasks.filter(t => t.done).length;
+const pendingTasks = tasks.filter(t => !t.done).length;
+const overdueTasks = tasks.filter(t => t.overdue).length;
+const focusScore = totalTasks === 0
+  ? 0
+  : Math.round((completedTasks / totalTasks) * 100);
+const progressPercent =
+  totalTasks === 0
+    ? 0
+    : Math.round((completedTasks / totalTasks) * 100);
+
+// Filter + search + sorting
+const filteredTasks = tasks
+  .filter(task =>
+    task.title.toLowerCase().includes(search.toLowerCase())
+  )
+  .filter(task =>
+    filter === "All" ? true :
+    filter === "Done" ? task.done :
+    filter === "Pending" ? !task.done :
+    task.overdue
+  )
+  .sort((a, b) => {
+    if (a.overdue && !b.overdue) return -1;
+    if (!a.overdue && b.overdue) return 1;
+
+    const priorityOrder = { High: 1, Medium: 2, Low: 3 };
+    return (priorityOrder[a.urgency] || 4) - (priorityOrder[b.urgency] || 4);
+  });
 
   return (
     <div className={`app-container ${darkMode ? "dark-mode" : ""}`}>
@@ -105,11 +135,20 @@ function App() {
       <h1>📋 My Tasks & Focus App</h1>
 
       {/* Progress bar */}
+      <div className="analytics-box">
+  <div>Total: {totalTasks}</div>
+  <div>Completed: {completedTasks}</div>
+  <div>Pending: {pendingTasks}</div>
+  <div>Overdue: {overdueTasks}</div>
+</div>
       <div className="progress-container">
         <div className="progress-bar" style={{ width: `${progressPercent}%` }}>
           {progressPercent}%
         </div>
       </div>
+      <div className="focus-score">
+  🎯 Focus Score: {focusScore}%
+</div>
 
       {/* Celebration Message */}
       {totalTasks > 0 && completedTasks === totalTasks && (
@@ -117,6 +156,13 @@ function App() {
       )}
 
       {/* Filter buttons */}
+      <input
+  type="text"
+  placeholder="🔎 Search tasks..."
+  value={search}
+  onChange={(e) => setSearch(e.target.value)}
+  className="search-input"
+/>
       <div className="filter-buttons">
         {["All","Done","Pending","Overdue"].map(f => (
           <button 
