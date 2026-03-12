@@ -20,22 +20,41 @@ function TaskItem({ task, onDelete, onUpdate, onToggle }) {
 
           <textarea
             value={form.description}
-            onChange={(e) => setForm({ ...form, description: e.target.value })}
+            onChange={(e) =>
+              setForm({ ...form, description: e.target.value })
+            }
           />
 
           <select
             value={form.priority}
-            onChange={(e) => setForm({ ...form, priority: e.target.value })}
+            onChange={(e) =>
+              setForm({ ...form, priority: e.target.value })
+            }
           >
             <option>High</option>
             <option>Medium</option>
             <option>Low</option>
           </select>
 
+          {/* NEW: CATEGORY EDIT */}
+          <select
+            value={form.category}
+            onChange={(e) =>
+              setForm({ ...form, category: e.target.value })
+            }
+          >
+            <option>Study</option>
+            <option>Coding</option>
+            <option>Personal</option>
+            <option>Other</option>
+          </select>
+
           <input
             type="date"
             value={form.dueDate ? form.dueDate.substring(0, 10) : ""}
-            onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
+            onChange={(e) =>
+              setForm({ ...form, dueDate: e.target.value })
+            }
           />
 
           <button onClick={handleSave}>Save</button>
@@ -52,7 +71,11 @@ function TaskItem({ task, onDelete, onUpdate, onToggle }) {
           </label>
 
           <h3>{task.title}</h3>
+
           <p>{task.description}</p>
+
+          {/* NEW: CATEGORY DISPLAY */}
+          <p className="task-category">📂 {task.category}</p>
 
           <p>
             Due:{" "}
