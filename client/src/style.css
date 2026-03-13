@@ -14,6 +14,7 @@ body, html {
   max-width: 900px;
   margin: auto;
   padding: 20px;
+  animation: fadeIn 0.4s ease;
 }
 
 h1 {
@@ -21,22 +22,37 @@ h1 {
   margin-bottom: 20px;
 }
 
+/* =======================
+   Buttons
+======================= */
 button {
   cursor: pointer;
-  border-radius: 6px;
-  padding: 6px 12px;
+  border-radius: 8px;
+  padding: 8px 14px;
   font-weight: 600;
+  border: none;
   transition: all 0.2s ease;
 }
 
+button:hover {
+  transform: translateY(-2px);
+  opacity: 0.95;
+}
+
+button:active {
+  transform: scale(0.96);
+}
+
+/* =======================
+   Inputs
+======================= */
 input, select {
-  padding: 8px;
-  border-radius: 6px;
+  padding: 10px;
+  border-radius: 8px;
   border: 1px solid #ccc;
   margin-bottom: 8px;
   width: 100%;
   box-sizing: border-box;
-  transition: all 0.2s ease;
 }
 
 /* =======================
@@ -46,11 +62,8 @@ input, select {
   position: fixed;
   top: 15px;
   right: 15px;
-  z-index: 1000;
   background-color: #2196f3;
-  color: #fff;
-  border: none;
-  transition: all 0.3s ease;
+  color: white;
 }
 
 /* =======================
@@ -59,75 +72,24 @@ input, select {
 .progress-container {
   width: 100%;
   height: 22px;
-  background-color: #ddd;
+  background: #ddd;
   border-radius: 11px;
-  margin-bottom: 12px;
   overflow: hidden;
+  margin-bottom: 15px;
 }
 
 .progress-bar {
   height: 100%;
-  background-color: #4caf50;
+  background: #4caf50;
   text-align: center;
-  color: #fff;
-  font-weight: 600;
+  color: white;
   line-height: 22px;
-  transition: width 0.4s ease;
-  white-space: nowrap;
+  font-weight: 600;
+  transition: width 0.6s ease;
 }
 
 /* =======================
-   Celebration Text
-======================= */
-.celebration-text {
-  text-align: center;
-  font-size: 1.2rem;
-  margin: 10px 0;
-  animation: popIn 0.5s ease;
-}
-
-/* =======================
-   Filter Buttons
-======================= */
-.filter-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 12px;
-}
-
-.filter-buttons button {
-  background-color: #eee;
-  color: #333;
-}
-
-.filter-buttons button.active {
-  background-color: #4caf50;
-  color: #fff;
-}
-
-.clear-btn {
-  background-color: #ff5252;
-  color: #fff;
-}
-
-/* =======================
-   Task Form
-======================= */
-.task-form {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-bottom: 20px;
-}
-
-.task-form button {
-  background-color: #2196f3;
-  color: #fff;
-}
-
-/* =======================
-   Task List
+   Task Cards
 ======================= */
 .task-list {
   display: flex;
@@ -139,225 +101,251 @@ input, select {
   background: linear-gradient(145deg,#ffffff,#f1f1f1);
   padding: 14px;
   border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.05);
   box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-  border:1px solid rgba(0,0,0,0.05);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s ease;
 }
 
 .task-card:hover {
-  transform: translateY(-4px) scale(1.01);
-  box-shadow: 0 8px 18px rgba(0,0,0,0.15);
+  transform: translateY(-4px);
 }
 
 .task-card.overdue {
   border-left: 6px solid #ff5252;
 }
 
-.task-card h4{
-  margin:0 0 6px 0;
-  font-size:18px;
+.task-card h4 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
 }
 
 .task-card p {
-  margin: 2px 0;
+  margin: 3px 0;
+  font-size: 14px;
+  color: #555;
+}
+
+.task-date {
+  font-size: 13px;
+  color: #777;
 }
 
 .task-buttons {
   display: flex;
-  gap: 6px;
-  margin-top: 6px;
-}
-
-.done-btn {
-  background-color: #4caf50;
-  color: #fff;
-}
-
-.edit-btn {
-  background-color: #2196f3;
-  color: #fff;
-}
-
-.delete-btn {
-  background-color: #ff5252;
-  color: #fff;
-}
-
-/* =======================
-   Pomodoro Timer
-======================= */
-.timer-box {
-  margin-top: 20px;
-  padding: 12px;
-  text-align: center;
-  border-radius: 8px;
-  background-color: #fff;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
-  transition: all 0.3s ease;
-}
-
-.timer-box.running {
-  animation: pulse 1s infinite;
-}
-
-.timer-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 6px;
+  gap: 8px;
   margin-top: 8px;
 }
 
-.timer-buttons button {
-  background-color: #2196f3;
-  color: #fff;
+.done-btn { background:#4caf50;color:white; }
+.edit-btn { background:#2196f3;color:white; }
+.delete-btn { background:#ff5252;color:white; }
+
+/* =======================
+   Search
+======================= */
+.search-input {
+  width:100%;
+  padding:10px 14px;
+  margin:12px 0;
+  border-radius:10px;
+  border:1px solid #ccc;
+}
+
+.search-input:focus {
+  border-color:#2196f3;
+  box-shadow:0 0 4px rgba(33,150,243,0.4);
+  outline:none;
 }
 
 /* =======================
-   Streak Display
+   Analytics
 ======================= */
+.analytics-box {
+  display:flex;
+  justify-content:space-between;
+  margin:12px 0;
+  padding:12px;
+  border-radius:10px;
+  background:#f0f2f5;
+  font-weight:600;
+}
+
+/* =======================
+   Priority Badges
+======================= */
+.priority {
+  padding:4px 10px;
+  border-radius:20px;
+  font-size:12px;
+  font-weight:600;
+  display:inline-block;
+}
+
+.High {
+  background:#ffdddd;
+  color:#b00020;
+}
+
+.Medium {
+  background:#fff3cd;
+  color:#856404;
+}
+
+.Low {
+  background:#d4edda;
+  color:#155724;
+}
+
+/* =======================
+   Pomodoro Section
+======================= */
+
+/* Streak */
 .streak-display {
-  text-align: center;
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin: 12px 0;
-  color: #ff9800;
-  animation: popIn 0.5s ease;
+  text-align:center;
+  font-size:18px;
+  font-weight:600;
+  margin:15px 0;
+  color:#ff9800;
+}
+
+/* Timer Box */
+.timer-box {
+  margin-top:10px;
+  padding:25px;
+  text-align:center;
+  border-radius:14px;
+  background:#f3f3f3;
+  box-shadow:0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* Timer Heading */
+.timer-title {
+  font-size:22px;
+  font-weight:600;
+  color:#444;
+}
+
+/* Timer Number */
+.timer-display {
+  font-size:52px;
+  font-weight:700;
+  margin:10px 0;
+  color:#333;
+}
+
+/* Timer Buttons */
+.timer-buttons {
+  display:flex;
+  justify-content:center;
+  gap:12px;
+  margin-top:15px;
+}
+
+.timer-buttons button {
+  min-width:90px;
+  background:#222;
+  color:white;
 }
 
 /* =======================
    Dark Mode
 ======================= */
 .app-container.dark-mode {
-  background-color: #121212;
-  color: #e0e0e0;
+  background:#121212;
+  color:#e0e0e0;
 }
 
 .app-container.dark-mode input,
 .app-container.dark-mode select,
 .app-container.dark-mode button {
-  background-color: #1e1e1e;
-  color: #e0e0e0;
-  border: 1px solid #333;
+  background:#1e1e1e;
+  color:#e0e0e0;
+  border:1px solid #333;
 }
 
 .app-container.dark-mode .task-card {
-  background-color: #1e1e1e;
-  color: #e0e0e0;
-  border: 1px solid #333;
+  background:#1e1e1e;
+  border:1px solid #333;
+}
+
+.app-container.dark-mode .task-card p {
+  color:#cccccc;
+}
+
+.app-container.dark-mode .task-date {
+  color:#bbbbbb;
+}
+
+.app-container.dark-mode .analytics-box {
+  background:#2a2a2a;
 }
 
 .app-container.dark-mode .progress-container {
-  background-color: #333;
+  background:#333;
 }
 
 .app-container.dark-mode .progress-bar {
-  background-color: #ff9800;
-}
-
-.app-container.dark-mode .filter-buttons button,
-.app-container.dark-mode .theme-toggle,
-.app-container.dark-mode .clear-btn {
-  background-color: #2c2c2c;
-  color: #e0e0e0;
-  border: 1px solid #555;
-}
-
-.app-container.dark-mode .filter-buttons button.active {
-  background-color: #4caf50;
-  color: #fff;
-}
-
-.app-container.dark-mode .timer-buttons button {
-  background-color: #2196f3;
-  color: #fff;
-}
-
-.app-container.dark-mode .streak-display {
-  color: #ffb74d;
+  background:#ff9800;
 }
 
 .app-container.dark-mode .timer-box {
-  background-color: #1e1e1e;
-  color: #e0e0e0;
-  border: 1px solid #333;
+  background:#1e1e1e;
+  border:1px solid #333;
+}
+
+.app-container.dark-mode .timer-display {
+  color:#ffffff;
+}
+
+.app-container.dark-mode .timer-title {
+  color:#dddddd;
+}
+
+.app-container.dark-mode .streak-display {
+  color:#ffb74d;
+}
+
+/* Dark Mode Priority Fix */
+.app-container.dark-mode .High {
+  background:#5c1b1b;
+  color:#ff6b6b;
+}
+
+.app-container.dark-mode .Medium {
+  background:#5a4a1a;
+  color:#ffd54f;
+}
+
+.app-container.dark-mode .Low {
+  background:#1b4d2b;
+  color:#7dffb3;
 }
 
 /* =======================
    Animations
 ======================= */
-@keyframes popIn {
-  0% { transform: scale(0.7); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-@keyframes pulse {
-  0% { box-shadow: 0 0 0 0 rgba(33, 150, 243, 0.7); }
-  70% { box-shadow: 0 0 0 15px rgba(33, 150, 243, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(33, 150, 243, 0); }
-}
-
-/* =======================
-   Hover Effects
-======================= */
-button:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
+@keyframes fadeIn {
+  from {
+    opacity:0;
+    transform:translateY(10px);
+  }
+  to {
+    opacity:1;
+    transform:translateY(0);
+  }
 }
 
 /* =======================
    Responsive
 ======================= */
-@media (max-width: 600px) {
-  .task-buttons, .timer-buttons, .filter-buttons {
-    flex-direction: column;
+@media (max-width:600px) {
+
+  .task-buttons,
+  .timer-buttons {
+    flex-direction:column;
+    align-items:center;
   }
-}
-.search-input{
-  width:100%;
-  padding:8px 12px;
-  margin:10px 0;
-  border-radius:8px;
-  border:1px solid #ccc;
-}
-.analytics-box{
-  display:flex;
-  justify-content:space-between;
-  margin:10px 0;
-  padding:10px;
-  border-radius:8px;
-  background:#f5f5f5;
-  font-weight:500;
-}
 
-.dark-mode .analytics-box{
-  background:#2a2a2a;
-}
-.priority{
-  font-weight:600;
-  padding:4px 8px;
-  border-radius:6px;
-  font-size:12px;
-  display:inline-block;
-  margin-top:4px;
-}
-
-.High{
-  background:#ffdddd;
-  color:#d8000c;
-}
-
-.Medium{
-  background:#fff3cd;
-  color:#856404;
-}
-
-.Low{
-  background:#d4edda;
-  color:#155724;
-}
-.focus-score{
-  margin-top:10px;
-  font-weight:600;
-  font-size:18px;
-  text-align:center;
 }
