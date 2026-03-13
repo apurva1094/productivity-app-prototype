@@ -1,109 +1,154 @@
-# 📚 StudyFlow – Productivity App
+# StudyFlow 📚⚡
 
-![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
-![Built With React](https://img.shields.io/badge/Built%20with-React-blue)
-![Hackathon Project](https://img.shields.io/badge/FOSS%20Hack-2026-orange)
-
-StudyFlow is a productivity web app designed to help students manage tasks, stay focused using the Pomodoro technique, and track productivity progress.
-
-This project was built during **FOSS Hack 2026**.
-
----
-
-## 🎯 Problem Statement
-
-Students often manage assignments, exams, and personal goals across multiple tools.
-This leads to missed deadlines, reduced focus, and poor organization.
-
----
-
-## 💡 Solution
-
-StudyFlow provides a **single lightweight productivity system** that combines:
-
-* Task management
-* Focus timer (Pomodoro)
-* Productivity analytics
-* Priority-based task organization
-
-The goal is to help students **stay organized, focused, and productive**.
+**StudyFlow** is a modern productivity web application designed to help students and professionals manage tasks, stay focused, and track productivity.
+It combines **task management**, **Pomodoro focus sessions**, and **productivity analytics** in one clean interface.
 
 ---
 
 ## 🚀 Features
 
-* 📋 Add, edit, delete tasks
-* ✅ Mark tasks as completed
-* 🔎 Search tasks instantly
-* 🎯 Priority tagging (High / Medium / Low)
-* 📅 Due date tracking
-* ⚠️ Overdue task detection
-* 📊 Progress bar & focus score
-* ⏱ Pomodoro focus timer
-* 🔥 Pomodoro streak tracking
-* 🎉 Milestone celebration with confetti
-* 🌙 Dark / Light mode
+### 📝 Task Management
 
----
+* Add, edit, and delete tasks
+* Assign **categories** to tasks
+* Set **priority levels** (High, Medium, Low)
+* Add **due dates**
+* Mark tasks as **completed**
 
-## 📸 App Preview
+### 🔎 Search and Filtering
 
-### Task Dashboard
+* Quickly search tasks
+* Filter tasks based on status or category
 
-![Task Dashboard](screenshots/screenshot1.png)
+### 📊 Productivity Analytics
 
-### Pomodoro Focus Timer
+* Total tasks overview
+* Completed vs pending tasks
+* Visual progress bar
+* Focus score
 
-![Pomodoro Timer](screenshots/screenshot2.png)
+### 🍅 Pomodoro Focus Timer
 
----
+* Start / Pause / Reset focus sessions
+* Helps maintain deep work cycles
 
-## 🌐 Live Demo
+### 🔥 Focus Streak
 
-Coming soon (deployment planned using Vercel)
+* Tracks consecutive Pomodoro sessions
+* Motivates consistent productivity
+
+### 🌙 Dark Mode
+
+* Toggle between **light mode and dark mode**
+* Optimized UI for readability
+
+### 📱 Responsive Design
+
+* Works smoothly on **desktop and mobile screens**
 
 ---
 
 ## 🛠 Tech Stack
 
-* React
-* JavaScript
-* CSS
-* LocalStorage
+* **Frontend:** HTML, CSS, JavaScript
+* **Framework:** React
+* **Storage:** LocalStorage (for saving tasks locally)
+* **Version Control:** Git & GitHub
 
 ---
 
-## 👥 Target Users
+## 📷 Screenshots
 
-* College students
-* School students
-* Self-learners
-* Anyone who wants a simple productivity tool
+### Dashboard
 
----
+![Dashboard](screenshots/dashboard.png)
 
-## 🛣 Hackathon Roadmap
+### Dark Mode
 
-Week 1 – Project setup and core task management
-Week 2 – Pomodoro timer and analytics
-Week 3 – UI improvements and advanced features
-Week 4 – Final polish and submission
+![Dark Mode](screenshots/darkmode.png)
 
----
+### Pomodoro Timer
 
-## 🌱 Open Source
+![Timer](screenshots/timer.png)
 
-This project is fully open-source and community-driven.
-Contributions and suggestions are welcome.
+### Task Management
+
+![Tasks](screenshots/tasks.png)
 
 ---
 
-## 👨‍💻 Author
+## ⚙️ Installation
 
-**Apurva Chaudhari**
+Clone the repository:
+
+```bash
+git clone https://github.com/yourusername/studyflow.git
+```
+
+Go to the project folder:
+
+```bash
+cd studyflow
+```
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Start the development server:
+
+```bash
+npm run dev
+```
+
+Open in browser:
+
+```
+http://localhost:5173
+```
 
 ---
 
-## 📄 License
+## 📂 Project Structure
 
-MIT License
+```
+studyflow
+ ├─ src
+ │   ├─ components
+ │   ├─ App.jsx
+ │   └─ style.css
+ ├─ public
+ ├─ screenshots
+ └─ README.md
+```
+
+---
+
+## 🎯 Future Improvements
+
+* Task reminders and notifications
+* Weekly productivity analytics
+* Cloud synchronization
+* User authentication
+* Data export
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome!
+Feel free to fork the repository and submit a pull request.
+
+---
+
+## 📜 License
+
+This project is open-source and available under the **MIT License**.
+
+---
+
+## ⭐ Support
+
+If you like this project, consider giving it a **star on GitHub** ⭐.
