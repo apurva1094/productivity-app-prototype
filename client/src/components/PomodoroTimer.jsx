@@ -1,66 +1,46 @@
 import { useState, useEffect } from "react";
 
-export default function PomodoroTimer() {
+export default function FocusTimer({ onPomodoroEnd }) {
 
-  const [time, setTime] = useState(25 * 60);
+  const [time, setTime] = useState(1500); // 25 minutes
   const [running, setRunning] = useState(false);
-  const [isBreak, setIsBreak] = useState(false);
 
-  const [sessions, setSessions] = useState(() => {
-    const saved = localStorage.getItem("pomodoroSessions");
-    return saved ? Number(saved) : 0;
-  });
-
-  // TIMER LOGIC
   useEffect(() => {
-    let timer;
+    if (!running) return;
 
-    if (running) {
-      timer = setInterval(() => {
-        setTime((prev) => prev - 1);
-      }, 1000);
-    }
+    const timer = setInterval(() => {
+      setTime((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          setRunning(false);
+
+          if (onPomodoroEnd) {
+            onPomodoroEnd(); // notify App.jsx
+          }
+
+          alert("⏰ Pomodoro finished!");
+          return 1500; // reset to 25 min
+        }
+
+        return prev - 1;
+      });
+    }, 1000);
 
     return () => clearInterval(timer);
-  }, [running]);
 
-  // WHEN TIMER FINISHES
-  useEffect(() => {
-    if (time === 0) {
-
-      setRunning(false);
-
-      if (!isBreak) {
-        setSessions((prev) => prev + 1);
-        setIsBreak(true);
-        setTime(5 * 60);
-        alert("Focus session finished! Take a break.");
-      } else {
-        setIsBreak(false);
-        setTime(25 * 60);
-        alert("Break finished! Back to focus.");
-      }
-
-    }
-  }, [time, isBreak]);
-
-  // SAVE SESSIONS
-  useEffect(() => {
-    localStorage.setItem("pomodoroSessions", sessions);
-  }, [sessions]);
+  }, [running, onPomodoroEnd]);
 
   const minutes = Math.floor(time / 60);
   const seconds = time % 60;
 
   return (
-    <div style={{ border: "1px solid gray", padding: "20px", marginTop: "20px" }}>
-      
-      <h2>{isBreak ? "Break Time ☕" : "Focus Time 🎯"}</h2>
+    <div className="timer-box">
 
-      <p>🔥 Completed Sessions: {sessions}</p>
+      <h2>⏱ Focus Timer</h2>
 
       <h1>
-        {minutes}:{seconds < 10 ? "0" : ""}{seconds}
+        {minutes}:{seconds < 10 ? "0" : ""}
+        {seconds}
       </h1>
 
       <button onClick={() => setRunning(true)}>Start</button>
@@ -70,7 +50,7 @@ export default function PomodoroTimer() {
       <button
         onClick={() => {
           setRunning(false);
-          setTime(isBreak ? 5 * 60 : 25 * 60);
+          setTime(1500);
         }}
       >
         Reset
