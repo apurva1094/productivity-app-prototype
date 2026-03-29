@@ -1,19 +1,21 @@
+// Import Firebase modules
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
+// ✅ Use environment variables for all Firebase config
 const firebaseConfig = {
-  apiKey: "AIzaSyC1S3PCZuE88ZhuSoBLgDatpPGX57_SvPY",
-  authDomain: "productivity-app-prototype.firebaseapp.com",
-  projectId: "productivity-app-prototype",
-  storageBucket: "productivity-app-prototype.appspot.com",
-  messagingSenderId: "116214554157",
-  appId: "1:116214554157:web:b3b844937f69e080c7a2a4"
+  apiKey: import.meta.env.VITE_API_KEY,
+  authDomain: import.meta.env.VITE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_APP_ID
 };
 
-// ✅ FIRST initialize app
+// Initialize Firebase app
 const app = initializeApp(firebaseConfig);
 
-// ✅ THEN use it
+// Export auth and firestore
 export const auth = getAuth(app);
 export const db = getFirestore(app);
