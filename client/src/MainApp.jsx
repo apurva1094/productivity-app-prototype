@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { auth, db } from "./firebase"; // single correct import
-import { onAuthStateChanged } from "firebase/auth";
+
 import TaskForm from "./components/TaskForm";
 import TaskList from "./components/TaskList";
 import FocusTimer from "./components/FocusTimer";
@@ -8,9 +8,9 @@ import confetti from "canvas-confetti";
 import "./style.css";
 import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, where } from "firebase/firestore";
 
-function MainApp() {
+function MainApp({ user }){
   // ✅ State
-  const [user, setUser] = useState(null);
+ 
   const [tasks, setTasks] = useState([]);
   const [editingIndex, setEditingIndex] = useState(null);
   const [darkMode, setDarkMode] = useState(false);
@@ -20,14 +20,6 @@ function MainApp() {
   const [showPopup, setShowPopup] = useState(false);
   const [todayCount, setTodayCount] = useState(0);
 
-  // 🔥 Listen for Firebase Auth state changes
-   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-    });
-
-    return () => unsubscribe();
-  }, []);
 
   // 🔥 Load streak & today sessions from localStorage
   useEffect(() => {
