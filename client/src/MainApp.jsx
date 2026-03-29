@@ -1,23 +1,16 @@
 import React, { useState, useEffect } from "react";
+import { auth, db } from "./firebase"; // single correct import
+import { onAuthStateChanged } from "firebase/auth";
 import TaskForm from "./components/TaskForm";
 import TaskList from "./components/TaskList";
 import FocusTimer from "./components/FocusTimer";
 import confetti from "canvas-confetti";
 import "./style.css";
+import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, where } from "firebase/firestore";
 
-import { db } from "./firebase";
-import {
-  collection,
-  addDoc,
-  getDocs,
-  deleteDoc,
-  doc,
-  updateDoc,
-  query,
-  where,
-} from "firebase/firestore";
-
-function MainApp({ user }) {
+function MainApp() {
+  // ✅ State
+  const [user, setUser] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [editingIndex, setEditingIndex] = useState(null);
   const [darkMode, setDarkMode] = useState(false);
@@ -26,28 +19,33 @@ function MainApp({ user }) {
   const [search, setSearch] = useState("");
   const [showPopup, setShowPopup] = useState(false);
   const [todayCount, setTodayCount] = useState(0);
-  // 🔥 Load streak from localStorage
+
+  // 🔥 Listen for Firebase Auth state changes
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // 🔥 Load streak & today sessions from localStorage
   useEffect(() => {
     const savedStreak = localStorage.getItem("pomodoroStreak");
     if (savedStreak) setStreak(Number(savedStreak));
-  }, []);
-  useEffect(() => {
-  const saved = localStorage.getItem("todaySessions");
-  if (saved) setTodayCount(Number(saved));
-}, []);
 
-  // 🔥 Save streak to localStorage
+    const savedToday = localStorage.getItem("todaySessions");
+    if (savedToday) setTodayCount(Number(savedToday));
+  }, []);
+
+  // 🔥 Save streak & today sessions
   useEffect(() => {
     localStorage.setItem("pomodoroStreak", streak);
-  }, [streak]);
-  useEffect(() => {
-  localStorage.setItem("todaySessions", todayCount);
-}, [todayCount]);
+    localStorage.setItem("todaySessions", todayCount);
+  }, [streak, todayCount]);
 
-  // 🔥 Apply dark mode class to body
+  // 🔥 Apply dark mode
   useEffect(() => {
-    if (darkMode) document.body.classList.add("dark-mode");
-    else document.body.classList.remove("dark-mode");
+    document.body.classList.toggle("dark-mode", darkMode);
   }, [darkMode]);
 
   // ✅ Fetch user-specific tasks from Firestore
@@ -57,19 +55,15 @@ function MainApp({ user }) {
     const fetchTasks = async () => {
       const q = query(collection(db, "tasks"), where("userId", "==", user.uid));
       const querySnapshot = await getDocs(q);
-
       const taskList = querySnapshot.docs.map((doc) => {
         const data = doc.data();
         return {
           id: doc.id,
           ...data,
-          dueDate: data.dueDate
-            ? data.dueDate.toDate?.() || new Date(data.dueDate)
-            : null,
+          dueDate: data.dueDate ? data.dueDate.toDate?.() || new Date(data.dueDate) : null,
           done: data.done || false,
         };
       });
-
       setTasks(taskList);
     };
 
@@ -81,7 +75,6 @@ function MainApp({ user }) {
     if (!user?.uid) return;
 
     if (editingIndex !== null) {
-      // Update existing task
       const taskToUpdate = tasks[editingIndex];
       await updateDoc(doc(db, "tasks", taskToUpdate.id), task);
 
@@ -90,13 +83,11 @@ function MainApp({ user }) {
       setTasks(updated);
       setEditingIndex(null);
     } else {
-      // Add new task
       const docRef = await addDoc(collection(db, "tasks"), {
         ...task,
         userId: user.uid,
         done: false,
       });
-
       setTasks([...tasks, { ...task, id: docRef.id, userId: user.uid, done: false }]);
     }
   };
@@ -114,11 +105,7 @@ function MainApp({ user }) {
   const handleToggleDone = async (index) => {
     const updated = [...tasks];
     updated[index].done = !updated[index].done;
-
-    await updateDoc(doc(db, "tasks", updated[index].id), {
-      done: updated[index].done,
-    });
-
+    await updateDoc(doc(db, "tasks", updated[index].id), { done: updated[index].done });
     setTasks(updated);
   };
 
@@ -133,7 +120,8 @@ function MainApp({ user }) {
 
   // 🔥 Pomodoro end logic
   const handlePomodoroEnd = () => {
-    setTodayCount(prev => prev + 1);
+    setTodayCount((prev) => prev + 1);
+
     // Mark first incomplete task as done
     const firstIncompleteIndex = tasks.findIndex((task) => !task.done);
     if (firstIncompleteIndex !== -1) {
@@ -147,18 +135,13 @@ function MainApp({ user }) {
     setStreak(newStreak);
 
     // Celebrate milestone
-    setShowPopup(true); // always show popup
-
-if (newStreak % 5 === 0) {
-  confetti({
-    particleCount: 200,
-    spread: 90,
-    origin: { y: 0.6 },
-  });
-}
+    setShowPopup(true);
+    if (newStreak % 5 === 0) {
+      confetti({ particleCount: 200, spread: 90, origin: { y: 0.6 } });
+    }
   };
 
-  // 🔥 Overdue calculations
+  // 🔥 Calculate overdue tasks
   const today = new Date();
   const updatedTasksWithOverdue = tasks.map((task) => {
     if (task.dueDate) {
@@ -172,21 +155,13 @@ if (newStreak % 5 === 0) {
   const completedTasks = updatedTasksWithOverdue.filter((t) => t.done).length;
   const pendingTasks = updatedTasksWithOverdue.filter((t) => !t.done).length;
   const overdueTasks = updatedTasksWithOverdue.filter((t) => t.overdue).length;
-
-  const progressPercent =
-    totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
+  const progressPercent = totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
 
   // 🔥 Filtered & searched tasks
   const filteredTasks = updatedTasksWithOverdue
     .filter((task) => task.title.toLowerCase().includes(search.toLowerCase()))
     .filter((task) =>
-      filter === "All"
-        ? true
-        : filter === "Done"
-        ? task.done
-        : filter === "Pending"
-        ? !task.done
-        : task.overdue
+      filter === "All" ? true : filter === "Done" ? task.done : filter === "Pending" ? !task.done : task.overdue
     );
 
   return (
@@ -195,11 +170,7 @@ if (newStreak % 5 === 0) {
       <div className="top-bar">
         <h1>📋 StudyFlow</h1>
         <label className="switch">
-          <input
-            type="checkbox"
-            checked={darkMode}
-            onChange={() => setDarkMode((prev) => !prev)}
-          />
+          <input type="checkbox" checked={darkMode} onChange={() => setDarkMode((prev) => !prev)} />
           <span className="slider"></span>
         </label>
       </div>
@@ -231,11 +202,7 @@ if (newStreak % 5 === 0) {
       {/* 🔥 Filters */}
       <div className="filter-buttons">
         {["All", "Done", "Pending", "Overdue"].map((f) => (
-          <button
-            key={f}
-            className={filter === f ? "active" : ""}
-            onClick={() => setFilter(f)}
-          >
+          <button key={f} className={filter === f ? "active" : ""} onClick={() => setFilter(f)}>
             {f}
           </button>
         ))}
@@ -245,44 +212,27 @@ if (newStreak % 5 === 0) {
       </div>
 
       {/* 🔥 Task components */}
-      <TaskForm
-        onAdd={handleAddOrUpdate}
-        editingTask={editingIndex !== null ? tasks[editingIndex] : null}
-        onClearEdit={() => setEditingIndex(null)}
-      />
+      <TaskForm onAdd={handleAddOrUpdate} editingTask={editingIndex !== null ? tasks[editingIndex] : null} onClearEdit={() => setEditingIndex(null)} />
+      <TaskList tasks={filteredTasks} onEdit={handleEdit} onDelete={handleDelete} onToggleDone={handleToggleDone} />
 
-      <TaskList
-        tasks={filteredTasks}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        onToggleDone={handleToggleDone}
-      />
-
-
-      {/* 🔥 Pomodoro Timer */}
       {/* 🔥 Pomodoro Timer */}
       <div className="streak">
-  🔥 Streak: {streak} | 📅 Today: {todayCount}
-</div>
-<FocusTimer onPomodoroEnd={handlePomodoroEnd} />
+        🔥 Streak: {streak} | 📅 Today: {todayCount}
+      </div>
+      <FocusTimer onPomodoroEnd={handlePomodoroEnd} />
 
-
-{/* 🔥 Popup */}
-{showPopup && (
-  <div className="popup-overlay">
-    <div className="popup-box">
-      <h2>🎉 Session Complete!</h2>
-      <p>Take a short break 😄</p>
-
-      <button onClick={() => setShowPopup(false)}>
-        OK
-      </button>
-    </div>
-  </div>
-)}
+      {/* 🔥 Popup */}
+      {showPopup && (
+        <div className="popup-overlay">
+          <div className="popup-box">
+            <h2>🎉 Session Complete!</h2>
+            <p>Take a short break 😄</p>
+            <button onClick={() => setShowPopup(false)}>OK</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
-
 
 export default MainApp;
