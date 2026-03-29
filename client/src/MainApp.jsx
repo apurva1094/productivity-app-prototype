@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { auth, db } from "./firebase"; // single correct import
 import { onAuthStateChanged } from "firebase/auth";
 import TaskForm from "./components/TaskForm";
@@ -21,10 +21,11 @@ function MainApp() {
   const [todayCount, setTodayCount] = useState(0);
 
   // 🔥 Listen for Firebase Auth state changes
-  useEffect(() => {
+   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
     });
+
     return () => unsubscribe();
   }, []);
 
