@@ -1,16 +1,16 @@
+// src/MainApp.jsx
 import { useState, useEffect } from "react";
-import { auth, db } from "./firebase"; // single correct import
-
+import { auth, db } from "./firebase"; 
+import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc, query, where } from "firebase/firestore";
 import TaskForm from "./components/TaskForm";
 import TaskList from "./components/TaskList";
 import FocusTimer from "./components/FocusTimer";
 import confetti from "canvas-confetti";
 import "./style.css";
-import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, where } from "firebase/firestore";
 
-function MainApp({ user }){
-  // ✅ State
- 
+function MainApp({ user }) {
+  if (!user) return <div>Loading...</div>;
+
   const [tasks, setTasks] = useState([]);
   const [editingIndex, setEditingIndex] = useState(null);
   const [darkMode, setDarkMode] = useState(false);
@@ -20,8 +20,7 @@ function MainApp({ user }){
   const [showPopup, setShowPopup] = useState(false);
   const [todayCount, setTodayCount] = useState(0);
 
-
-  // 🔥 Load streak & today sessions from localStorage
+  // Load streak & today sessions
   useEffect(() => {
     const savedStreak = localStorage.getItem("pomodoroStreak");
     if (savedStreak) setStreak(Number(savedStreak));
@@ -30,21 +29,20 @@ function MainApp({ user }){
     if (savedToday) setTodayCount(Number(savedToday));
   }, []);
 
-  // 🔥 Save streak & today sessions
+  // Save streak & today sessions
   useEffect(() => {
     localStorage.setItem("pomodoroStreak", streak);
     localStorage.setItem("todaySessions", todayCount);
   }, [streak, todayCount]);
 
-  // 🔥 Apply dark mode
+  // Apply dark mode
   useEffect(() => {
     document.body.classList.toggle("dark-mode", darkMode);
   }, [darkMode]);
 
-  // ✅ Fetch user-specific tasks from Firestore
+  // Fetch tasks
   useEffect(() => {
     if (!user?.uid) return;
-
     const fetchTasks = async () => {
       const q = query(collection(db, "tasks"), where("userId", "==", user.uid));
       const querySnapshot = await getDocs(q);
@@ -53,48 +51,42 @@ function MainApp({ user }){
         return {
           id: doc.id,
           ...data,
-          dueDate: data.dueDate ? data.dueDate.toDate?.() || new Date(data.dueDate) : null,
+          dueDate: data.dueDate ? new Date(data.dueDate) : null,
           done: data.done || false,
         };
       });
       setTasks(taskList);
     };
-
     fetchTasks();
   }, [user]);
 
-  // 🔥 Add or update task
+  // Add/update task
   const handleAddOrUpdate = async (task) => {
     if (!user?.uid) return;
 
     if (editingIndex !== null) {
       const taskToUpdate = tasks[editingIndex];
       await updateDoc(doc(db, "tasks", taskToUpdate.id), task);
-
       const updated = [...tasks];
       updated[editingIndex] = { ...task, id: taskToUpdate.id };
       setTasks(updated);
       setEditingIndex(null);
     } else {
-      const docRef = await addDoc(collection(db, "tasks"), {
-        ...task,
-        userId: user.uid,
-        done: false,
-      });
+      const docRef = await addDoc(collection(db, "tasks"), { ...task, userId: user.uid, done: false });
       setTasks([...tasks, { ...task, id: docRef.id, userId: user.uid, done: false }]);
     }
   };
 
   const handleEdit = (index) => setEditingIndex(index);
 
-  // 🔥 Delete task
+  // Delete task
   const handleDelete = async (index) => {
     const taskToDelete = tasks[index];
     await deleteDoc(doc(db, "tasks", taskToDelete.id));
     setTasks(tasks.filter((_, i) => i !== index));
   };
 
-  // 🔥 Toggle done
+  // Toggle done
   const handleToggleDone = async (index) => {
     const updated = [...tasks];
     updated[index].done = !updated[index].done;
@@ -102,20 +94,17 @@ function MainApp({ user }){
     setTasks(updated);
   };
 
-  // 🔥 Clear completed tasks
+  // Clear completed
   const handleClearCompleted = async () => {
     const completedTasks = tasks.filter((task) => task.done);
-    for (let task of completedTasks) {
-      await deleteDoc(doc(db, "tasks", task.id));
-    }
+    for (let task of completedTasks) await deleteDoc(doc(db, "tasks", task.id));
     setTasks(tasks.filter((task) => !task.done));
   };
 
-  // 🔥 Pomodoro end logic
+  // Pomodoro end logic
   const handlePomodoroEnd = () => {
     setTodayCount((prev) => prev + 1);
 
-    // Mark first incomplete task as done
     const firstIncompleteIndex = tasks.findIndex((task) => !task.done);
     if (firstIncompleteIndex !== -1) {
       const updatedTasks = [...tasks];
@@ -123,18 +112,14 @@ function MainApp({ user }){
       setTasks(updatedTasks);
     }
 
-    // Update streak
     const newStreak = streak + 1;
     setStreak(newStreak);
 
-    // Celebrate milestone
     setShowPopup(true);
-    if (newStreak % 5 === 0) {
-      confetti({ particleCount: 200, spread: 90, origin: { y: 0.6 } });
-    }
+    if (newStreak % 5 === 0) confetti({ particleCount: 200, spread: 90, origin: { y: 0.6 } });
   };
 
-  // 🔥 Calculate overdue tasks
+  // Overdue tasks
   const today = new Date();
   const updatedTasksWithOverdue = tasks.map((task) => {
     if (task.dueDate) {
@@ -150,7 +135,6 @@ function MainApp({ user }){
   const overdueTasks = updatedTasksWithOverdue.filter((t) => t.overdue).length;
   const progressPercent = totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
 
-  // 🔥 Filtered & searched tasks
   const filteredTasks = updatedTasksWithOverdue
     .filter((task) => task.title.toLowerCase().includes(search.toLowerCase()))
     .filter((task) =>
@@ -159,16 +143,32 @@ function MainApp({ user }){
 
   return (
     <div className={`app-container ${darkMode ? "dark-mode" : ""}`}>
-      {/* 🔥 Top bar */}
-      <div className="top-bar">
-        <h1>📋 StudyFlow</h1>
-        <label className="switch">
-          <input type="checkbox" checked={darkMode} onChange={() => setDarkMode((prev) => !prev)} />
-          <span className="slider"></span>
-        </label>
-      </div>
+      {/* TOP BAR */}
+     <div className="top-bar">
+  {/* Left side: Title + Email */}
+  <div className="top-left">
+    <h1>📋 StudyFlow</h1>
+    <div className="user-email">👤 {user.email}</div>
+  </div>
 
-      {/* 🔥 Analytics */}
+  {/* Right side: Logout + Dark/Light Toggle */}
+  <div className="top-right">
+    <button className="logout-btn" onClick={() => auth.signOut()}>
+      Logout
+    </button>
+
+    <label className="switch">
+      <input
+        type="checkbox"
+        checked={darkMode}
+        onChange={() => setDarkMode(prev => !prev)}
+      />
+      <span className="slider"></span>
+    </label>
+  </div>
+</div>
+
+      {/* ANALYTICS */}
       <div className="analytics-box">
         <div>Total: {totalTasks}</div>
         <div>Completed: {completedTasks}</div>
@@ -176,14 +176,12 @@ function MainApp({ user }){
         <div>Overdue: {overdueTasks}</div>
       </div>
 
-      {/* 🔥 Progress bar */}
+      {/* PROGRESS */}
       <div className="progress-container">
-        <div className="progress-bar" style={{ width: `${progressPercent}%` }}>
-          {progressPercent}%
-        </div>
+        <div className="progress-bar" style={{ width: `${progressPercent}%` }}>{progressPercent}%</div>
       </div>
 
-      {/* 🔥 Search */}
+      {/* SEARCH */}
       <input
         type="text"
         placeholder="🔎 Search tasks..."
@@ -192,29 +190,23 @@ function MainApp({ user }){
         className="search-input"
       />
 
-      {/* 🔥 Filters */}
+      {/* FILTER */}
       <div className="filter-buttons">
         {["All", "Done", "Pending", "Overdue"].map((f) => (
-          <button key={f} className={filter === f ? "active" : ""} onClick={() => setFilter(f)}>
-            {f}
-          </button>
+          <button key={f} className={filter === f ? "active" : ""} onClick={() => setFilter(f)}>{f}</button>
         ))}
-        <button onClick={handleClearCompleted} className="clear-btn">
-          Clear Completed
-        </button>
+        <button onClick={handleClearCompleted} className="clear-btn">Clear Completed</button>
       </div>
 
-      {/* 🔥 Task components */}
+      {/* TASK FORM & LIST */}
       <TaskForm onAdd={handleAddOrUpdate} editingTask={editingIndex !== null ? tasks[editingIndex] : null} onClearEdit={() => setEditingIndex(null)} />
       <TaskList tasks={filteredTasks} onEdit={handleEdit} onDelete={handleDelete} onToggleDone={handleToggleDone} />
 
-      {/* 🔥 Pomodoro Timer */}
-      <div className="streak">
-        🔥 Streak: {streak} | 📅 Today: {todayCount}
-      </div>
+      {/* STREAK & TIMER */}
+      <div className="streak">🔥 Streak: {streak} | 📅 Today: {todayCount}</div>
       <FocusTimer onPomodoroEnd={handlePomodoroEnd} />
 
-      {/* 🔥 Popup */}
+      {/* POPUP */}
       {showPopup && (
         <div className="popup-overlay">
           <div className="popup-box">

@@ -1,11 +1,12 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import path from "path";
 
 export default defineConfig({
   plugins: [react()],
-  
-  // ✅ Pre-bundle Firebase modules so Vercel/Vite doesn't fail
-  optimizeDeps: {
-    include: ["firebase/app", "firebase/auth", "firebase/firestore"]
-  }
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
 });

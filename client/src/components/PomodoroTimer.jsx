@@ -1,6 +1,5 @@
-import { useState, useEffect } from "react";
-
-export default function FocusTimer({ onPomodoroEnd }) {
+import React,{ useState, useEffect } from "react";
+ function FocusTimer({ onPomodoroEnd }) {
 
   const [time, setTime] = useState(1500); // 25 minutes
   const [running, setRunning] = useState(false);
