@@ -90,11 +90,19 @@ It combines **task management**, **Pomodoro focus sessions**, and **productivity
 
 ## 📷 Screenshots
 
-![Dashboard](screenshots/dashboard.png)
-![Dark Mode](screenshots/darkmode.png)
-![Pomodoro Timer](screenshots/timer.png)
-![Tasks](screenshots/tasks.png)
+## 📷 Screenshots
 
+### Dashboard
+![Dashboard](screenshots/Dashboard.png)
+
+### Task List
+![Task List](screenshots/Task%20list.png)
+
+### Dark Mode
+![Dark Mode](screenshots/Darkmode.png)
+
+### Timer
+![Timer](screenshots/timer.png)
 ---
 
 ## ⚙️ Installation
