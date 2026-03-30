@@ -7,7 +7,8 @@ It combines **task management**, **Pomodoro focus sessions**, and **productivity
 
 ## 🌐 Live Demo
 
-👉 https://productivity-app-prototype.web.app
+- Firebase: https://productivity-app-prototype.web.app
+- Vercel: https://productivity-app-prototype.vercel.app## 
 
 ---
 
