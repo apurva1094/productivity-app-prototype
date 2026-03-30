@@ -897,32 +897,21 @@ input:checked + .slider:before {
   margin-bottom: 8px;
 }
 /* Base task style */
-.task {
-  border-left: 6px solid;
+.task-card {
+  border-left: 5px solid; /* all tasks have a border */
   padding: 10px;
   margin-bottom: 8px;
-  border-radius: 8px;
-  transition: border-color 0.3s, box-shadow 0.3s;
 }
 
-/* Priority-based borders with gradient & glow */
-.task.high {
-  border-image: linear-gradient(to bottom, #ff4d4f, #ff1a1a) 1;
-  box-shadow: 0 0 8px rgba(255, 77, 79, 0.5);
-}
+/* Priority-based colors */
+.task-card.high { border-color: red; }
+.task-card.medium { border-color: orange; }
+.task-card.low { border-color: green; }
 
-.task.medium {
-  border-image: linear-gradient(to bottom, #ffb347, #ffcc33) 1; /* golden orange */
-  box-shadow: 0 0 8px rgba(255, 179, 71, 0.5);
-}
-
-.task.low {
-  border-image: linear-gradient(to bottom, #4caf50, #81c784) 1;
-  box-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
-}
-
-/* Overdue tasks override priority */
-.task.overdue {
-  border-image: linear-gradient(to bottom, #b00020, #7a0015) 1 !important;
-  box-shadow: 0 0 10px rgba(176, 0, 32, 0.7) !important;
+/* Overdue: add a small red ⚠️ icon instead of changing border */
+.task-card.overdue::after {
+  content: " ⚠️";
+  margin-left: 5px;
+  color: red;
+  font-weight: bold;
 }

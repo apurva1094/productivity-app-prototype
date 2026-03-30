@@ -40,9 +40,8 @@ function TaskList({ tasks, onEdit, onDelete, onToggleDone }) {
       {filteredTasks.map((task, index) => (
         <div
   key={index}
-  className={`task-card task ${task.urgency?.toLowerCase()} ${task.overdue ? "overdue" : ""} ${
-    removingIndex === index ? "fade-slide-out" : ""
-  }`}
+   className={`task-card ${task.urgency.toLowerCase()} ${task.overdue ? "overdue" : ""}`}
+  
 >
  
 
