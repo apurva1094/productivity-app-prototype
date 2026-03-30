@@ -114,7 +114,7 @@ function MainApp({ user }) {
 
     const newStreak = streak + 1;
     setStreak(newStreak);
-
+    alert("🔥 Great job! Keep going!");
     setShowPopup(true);
     if (newStreak % 5 === 0) confetti({ particleCount: 200, spread: 90, origin: { y: 0.6 } });
   };
@@ -143,6 +143,7 @@ function MainApp({ user }) {
 
   return (
     <div className={`app-container ${darkMode ? "dark-mode" : ""}`}>
+      <h2>🚀 Stay Focused. Get Things Done.</h2>
       {/* TOP BAR */}
      <div className="top-bar">
   {/* Left side: Title + Email */}
@@ -211,7 +212,7 @@ function MainApp({ user }) {
         <div className="popup-overlay">
           <div className="popup-box">
             <h2>🎉 Session Complete!</h2>
-            <p>Take a short break 😄</p>
+            <p>🔥 You're building consistency. Keep it up!</p>
             <button onClick={() => setShowPopup(false)}>OK</button>
           </div>
         </div>
