@@ -90,7 +90,8 @@ It combines **task management**, **Pomodoro focus sessions**, and **productivity
 
 ## 📷 Screenshots
 
-## 📷 Screenshots
+### Login
+![Login](screenshots/Login.png)
 
 ### Dashboard
 ![Dashboard](screenshots/Dashboard.png)
