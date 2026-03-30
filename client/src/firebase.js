@@ -1,7 +1,7 @@
 // src/firebase.js
 import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore"; // Firestore DB
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 
 // 🔑 Your Firebase config
 const firebaseConfig = {
@@ -13,11 +13,12 @@ const firebaseConfig = {
   appId: "1:116214554157:web:b3b844937f69e080c7a2a4",
 };
 
-// Initialize Firebase app
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Export Auth and Firestore
+// Export auth, firestore, and Google provider
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+export const googleProvider = new GoogleAuthProvider();
 
 export default app;

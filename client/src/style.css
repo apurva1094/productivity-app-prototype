@@ -915,3 +915,39 @@ input:checked + .slider:before {
   color: red;
   font-weight: bold;
 }
+/* Login page container */
+.login-container {
+  max-width: 400px;       /* limit width */
+  margin: 100px auto;     /* center horizontally & add top margin */
+  padding: 30px;
+  background: #f5f5f5;    /* light background */
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+/* Inputs */
+.login-container input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+}
+
+/* Buttons */
+.login-container button {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 5px;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.google-login-btn {
+  background-color: #4285F4;
+  color: white;
+}
