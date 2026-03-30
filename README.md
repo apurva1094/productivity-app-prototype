@@ -3,9 +3,11 @@
 **StudyFlow** is a modern productivity web application designed to help students and professionals manage tasks, stay focused, and track productivity.
 It combines **task management**, **Pomodoro focus sessions**, and **productivity analytics** in one clean interface.
 
+---
+
 ## 🌐 Live Demo
 
-Coming soon
+👉 https://productivity-app-prototype.web.app
 
 ---
 
@@ -15,68 +17,82 @@ Coming soon
 
 * Add, edit, and delete tasks
 * Assign **categories** to tasks
-* Set **priority levels** (High, Medium, Low)
+* Set **priority levels** (High 🔴, Medium 🟠, Low 🟢)
 * Add **due dates**
 * Mark tasks as **completed**
+
+---
+
+### 🔐 Authentication
+
+* Login using **Email & Password**
+* **Google Sign-In** support
+* Secure user-based data storage
+
+---
 
 ### 🔎 Search and Filtering
 
 * Quickly search tasks
 * Filter tasks based on status or category
 
+---
+
 ### 📊 Productivity Analytics
 
 * Total tasks overview
 * Completed vs pending tasks
 * Visual progress bar
-* Focus score
+* Focus tracking
+
+---
 
 ### 🍅 Pomodoro Focus Timer
 
 * Start / Pause / Reset focus sessions
 * Helps maintain deep work cycles
+* Automatically updates task completion
+
+---
 
 ### 🔥 Focus Streak
 
 * Tracks consecutive Pomodoro sessions
 * Motivates consistent productivity
 
+---
+
 ### 🌙 Dark Mode
 
 * Toggle between **light mode and dark mode**
-* Optimized UI for readability
+* Clean and comfortable UI
+
+---
 
 ### 📱 Responsive Design
 
-* Works smoothly on **desktop and mobile screens**
+* Works on **desktop and mobile devices**
 
 ---
 
 ## 🛠 Tech Stack
 
-* **Frontend:** HTML, CSS, JavaScript
-* **Framework:** React
-* **Storage:** LocalStorage (for saving tasks locally)
+* **Frontend:** React + Vite
+* **Styling:** CSS
+* **Backend:** Firebase
+
+  * Firebase Authentication
+  * Firestore Database
+* **Deployment:** Firebase Hosting
 * **Version Control:** Git & GitHub
 
 ---
 
 ## 📷 Screenshots
 
-### Dashboard
-
 ![Dashboard](screenshots/dashboard.png)
-
-### Dark Mode
-
 ![Dark Mode](screenshots/darkmode.png)
-
-### Pomodoro Timer
-
-![Timer](screenshots/timer.png)
-
-### Task Management
-
+![Pomodoro Timer](screenshots/timer.png)
 ![Tasks](screenshots/tasks.png)
 
 ---
@@ -86,13 +102,13 @@ Coming soon
 Clone the repository:
 
 ```bash
-git clone https://github.com/yourusername/studyflow.git
+git clone https://github.com/apurva1094/productivity-app-prototype.git
 ```
 
 Go to the project folder:
 
 ```bash
-cd studyflow
+cd productivity-app-prototype/client
 ```
 
 Install dependencies:
@@ -115,35 +131,44 @@ http://localhost:5173
 
 ---
 
+## 🚀 Deployment
+
+```bash
+npm run build
+firebase deploy
+```
+
+---
+
 ## 📂 Project Structure
 
 ```
-studyflow
- ├─ src
- │   ├─ components
- │   ├─ App.jsx
- │   └─ style.css
- ├─ public
- ├─ screenshots
- └─ README.md
+studyflow/
+ ├── client/
+ │   ├── src/
+ │   ├── public/
+ │   └── dist/
+ ├── firebase.json
+ ├── .firebaserc
+ ├── screenshots/
+ └── README.md
 ```
 
 ---
 
 ## 🎯 Future Improvements
 
-* Task reminders and notifications
-* Weekly productivity analytics
-* Cloud synchronization
-* User authentication
-* Data export
+* 🔔 Task reminders & notifications
+* 📊 Advanced analytics dashboard
+* 🤖 AI-based task suggestions
+* 📅 Calendar integration
+* 📱 Improved mobile UI
 
 ---
 
-## 🤝 Contributing
+## 👨‍💻 Author
 
-Contributions are welcome!
-Feel free to fork the repository and submit a pull request.
+**Apurva Chaudhari**
 
 ---
 
@@ -155,4 +180,4 @@ This project is open-source and available under the **MIT License**.
 
 ## ⭐ Support
 
-If you like this project, consider giving it a **star on GitHub** ⭐.
+If you like this project, consider giving it a **star on GitHub** ⭐
